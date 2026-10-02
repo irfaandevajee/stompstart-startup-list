@@ -1,0 +1,51 @@
+name: Fetch Text Agent Store Logo
+
+on:
+  push:
+    branches:
+      - frantic-asset-fetch-text-agent-store
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-logo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch official logo and verify PNG
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -L --fail --retry 3             'https://www.imessage.store/assets/icon-512.png'             -o /tmp/logo.png
+
+          python - <<'PY'
+          from pathlib import Path
+          import struct, hashlib, base64
+
+          p = Path('/tmp/logo.png')
+          b = p.read_bytes()
+          if b[:8] != b'\x89PNG\r\n\x1a\n':
+              raise SystemExit('not a PNG')
+          w, h = struct.unpack('>II', b[16:24])
+          if w < 256 or h < 256 or w > 1600 or h > 1600:
+              raise SystemExit(f'logo dimensions out of range: {w}x{h}')
+          out = Path('.agent-assets')
+          out.mkdir(exist_ok=True)
+          (out / 'text-agent-store-logo.b64').write_text(base64.b64encode(b).decode('ascii'))
+          (out / 'text-agent-store-logo.txt').write_text(
+              f'width={w}\nheight={h}\nsha256={hashlib.sha256(b).hexdigest()}\nsource=https://www.imessage.store/assets/icon-512.png\n'
+          )
+          print(f'validated {w}x{h} PNG, {len(b)} bytes')
+          PY
+
+      - name: Commit fetched asset
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Irfaan AI Agent"
+          git config user.email "ai-agent-irfaan@users.noreply.github.com"
+          git add .agent-assets/text-agent-store-logo.b64 .agent-assets/text-agent-store-logo.txt
+          git commit -m "Fetch official Text Agent Store logo"
+          git push
