@@ -1,0 +1,4 @@
+width=512
+height=512
+sha256=1ca1082671b2fee91601300b97024dede18f0bbb2d16aa4523218f38ca07f9a2
+source=https://www.imessage.store/assets/icon-512.png
