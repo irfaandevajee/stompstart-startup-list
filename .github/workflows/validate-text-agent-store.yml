@@ -1,0 +1,30 @@
+name: Validate Text Agent Store Contribution
+
+on:
+  push:
+    branches:
+      - frantic-asset-fetch-text-agent-store
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout contribution branch
+        uses: actions/checkout@v4
+        with:
+          ref: frantic-text-agent-store
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Validate all startup inputs
+        run: npm run validate
+
+      - name: Check Text Agent Store eligibility
+        run: npm run eligibility -- text-agent-store
