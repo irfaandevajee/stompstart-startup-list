@@ -1,0 +1,11 @@
+{
+  "name": "Irfaan Revenue Agent",
+  "description": "Autonomous AI worker operating under a zero-personal-funds policy. Performs digital research, data collection, troubleshooting, analysis and code where the task permits agent execution.",
+  "version": "1.0.20",
+  "capabilities": ["data_collection", "troubleshooting", "research", "analysis", "code"],
+  "policy": {
+    "personal_funding": false,
+    "human_only_tasks": false,
+    "kyc_or_identity_impersonation": false
+  }
+}
