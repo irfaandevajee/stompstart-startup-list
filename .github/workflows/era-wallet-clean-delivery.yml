@@ -1,0 +1,72 @@
+name: Era Wallet clean delivery
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/era-wallet-clean-delivery.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg python3-pip
+          python3 -m pip install --quiet --break-system-packages gdown
+
+      - name: Download submitted final and clean A-roll
+        env:
+          VIDEO_URL: "https://media.descriptusercontent.com/proxy/remux?url=https%3A%2F%2Fapi.descript.com%2Fv2%2Fpublished_projects%2Ff3056b10-2ab9-4021-806a-f2490a3a7e1e%2Fhls%3Fexpiration%3D1791331410619%26signature%3Dd0d2e69ce5896753a036fa13478b09c39f315db2b8c17f30da554a601ff648ff&filename=Era+Wallet+FINAL+1080p.mp4&mediaCacheBucketName=production-273614-media-cache&expiration=1791327811&signature=5737b1ee140d3462bcf1380bd494a273219c7d5e004e54121778d57df0fbb9ea"
+        run: |
+          set -euxo pipefail
+          curl -L --fail --retry 3 "$VIDEO_URL" -o submitted.mp4
+          gdown 1NTsoe4OdflmZO0pOMbWhVfiIKzltZHCP -O aroll.mov
+
+      - name: Render corrected final
+        run: |
+          set -euxo pipefail
+          ffmpeg -y \
+            -i submitted.mp4 \
+            -ss 1.9373125 -i aroll.mov \
+            -filter_complex "[0:v]drawbox=x=945:y=585:w=335:h=135:color=0x111217:t=fill[v];[1:a]atrim=duration=15.25,asetpts=PTS-STARTPTS,aresample=44100[a1];[0:a]atrim=start=14.25,asetpts=PTS-STARTPTS,aresample=44100[a2];[a1][a2]acrossfade=d=1.0:c1=tri:c2=tri[a]" \
+            -map "[v]" -map "[a]" \
+            -c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p \
+            -c:a aac -b:a 192k -ar 44100 \
+            -movflags +faststart \
+            Era_Wallet_FINAL_CLEAN_v2.mp4
+
+      - name: Validate output
+        run: |
+          set -euxo pipefail
+          ffprobe -v error -show_entries format=duration,size,bit_rate:stream=index,codec_name,width,height,r_frame_rate,sample_rate,channels -of json Era_Wallet_FINAL_CLEAN_v2.mp4 | tee final_ffprobe.json
+          sha256sum Era_Wallet_FINAL_CLEAN_v2.mp4 | tee SHA256.txt
+          ffmpeg -v error -i Era_Wallet_FINAL_CLEAN_v2.mp4 -t 30 -af "silencedetect=noise=-45dB:d=1.5" -f null - 2> opening_silence.txt || true
+          cat opening_silence.txt
+
+      - name: Upload validation artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: era-wallet-clean-validation
+          path: |
+            SHA256.txt
+            final_ffprobe.json
+            opening_silence.txt
+          retention-days: 7
+
+      - name: Publish public release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euxo pipefail
+          gh release delete era-wallet-final-clean --yes --cleanup-tag || true
+          gh release create era-wallet-final-clean \
+            Era_Wallet_FINAL_CLEAN_v2.mp4 \
+            SHA256.txt \
+            --title "Era Wallet Final Clean Delivery" \
+            --notes "Corrected final delivery: opening vocal overlap repaired with clean aligned A-roll, Descript branding removed, original edited video retained."
