@@ -64,9 +64,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euxo pipefail
-          gh release delete era-wallet-final-clean --yes --cleanup-tag || true
+          gh release delete era-wallet-final-clean --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag || true
           gh release create era-wallet-final-clean \
             Era_Wallet_FINAL_CLEAN_v2.mp4 \
             SHA256.txt \
+            --repo "$GITHUB_REPOSITORY" \
             --title "Era Wallet Final Clean Delivery" \
             --notes "Corrected final delivery: opening vocal overlap repaired with clean aligned A-roll, Descript branding removed, original edited video retained."
