@@ -1,0 +1,70 @@
+name: Era Wallet clean delivery
+
+on:
+  push:
+    branches: [era-wallet-delivery]
+    paths:
+      - '.github/workflows/era-wallet-clean-delivery.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Download clean source composition
+        env:
+          SOURCE_URL: "https://media.descriptusercontent.com/proxy/remux?url=https%3A%2F%2Fapi.descript.com%2Fv2%2Fpublished_projects%2F3b86c702-a617-41f9-89a3-ec13bddcd07e%2Fhls%3Fexpiration%3D1791332902703%26signature%3Dc86e8b3bee51a3c391f1bce095418b29504eb7f894d19d67b5470657ca3810fc&filename=Era+Wallet+Final+Cut+v1.mp4&mediaCacheBucketName=production-273614-media-cache&expiration=1791329303&signature=984f5e329849d07c1553c838a56321bc8d491da596b00c0518586aa1768edc14"
+        run: |
+          set -euxo pipefail
+          curl -L --fail --retry 3 "$SOURCE_URL" -o source.mp4
+          ffprobe -v error -show_entries format=duration:stream=index,codec_name,width,height,r_frame_rate,sample_rate,channels -of json source.mp4 | tee source_ffprobe.json
+
+      - name: Render watermark-free final
+        run: |
+          set -euxo pipefail
+          ffmpeg -y -i source.mp4 \
+            -vf "drawbox=x=945:y=585:w=335:h=135:color=0x111217:t=fill" \
+            -c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p \
+            -c:a aac -b:a 192k -ar 44100 \
+            -movflags +faststart \
+            Era_Wallet_FINAL_CLEAN.mp4
+          sha256sum Era_Wallet_FINAL_CLEAN.mp4 | tee SHA256.txt
+          ffprobe -v error -show_entries format=duration,size,bit_rate:stream=index,codec_name,width,height,r_frame_rate,sample_rate,channels -of json Era_Wallet_FINAL_CLEAN.mp4 | tee final_ffprobe.json
+
+      - name: Validate opening audio continuity
+        run: |
+          set -euxo pipefail
+          ffmpeg -y -i Era_Wallet_FINAL_CLEAN.mp4 -t 75 -vn -ac 1 -ar 16000 -c:a pcm_s16le opening.wav
+          ffmpeg -v error -i Era_Wallet_FINAL_CLEAN.mp4 -t 75 -af "silencedetect=noise=-45dB:d=1.5" -f null - 2> silencedetect.txt || true
+          cat silencedetect.txt
+
+      - name: Upload validation artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: era-wallet-clean-validation
+          path: |
+            SHA256.txt
+            source_ffprobe.json
+            final_ffprobe.json
+            silencedetect.txt
+          retention-days: 7
+
+      - name: Publish public release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euxo pipefail
+          gh release delete era-wallet-final-clean --yes --cleanup-tag || true
+          gh release create era-wallet-final-clean \
+            Era_Wallet_FINAL_CLEAN.mp4 \
+            SHA256.txt \
+            --title "Era Wallet Final Clean Delivery" \
+            --notes "Clean final delivery for the Era Wallet video editing bounty. Descript branding removed and clean source-composition audio retained."
