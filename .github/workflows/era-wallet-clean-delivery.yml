@@ -22,7 +22,7 @@ jobs:
 
       - name: Download submitted final and clean A-roll
         env:
-          VIDEO_URL: "https://media.descriptusercontent.com/proxy/remux?url=https%3A%2F%2Fapi.descript.com%2Fv2%2Fpublished_projects%2Ff3056b10-2ab9-4021-806a-f2490a3a7e1e%2Fhls%3Fexpiration%3D1791331410619%26signature%3Dd0d2e69ce5896753a036fa13478b09c39f315db2b8c17f30da554a601ff648ff&filename=Era+Wallet+FINAL_1080p.mp4&mediaCacheBucketName=production-273614-media-cache&expiration=1791327811&signature=5737b1ee140d3462bcf1380bd494a273219c7d5e004e54121778d57df0fbb9ea"
+          VIDEO_URL: "https://media.descriptusercontent.com/proxy/remux?url=https%3A%2F%2Fapi.descript.com%2Fv2%2Fpublished_projects%2Ff3056b10-2ab9-4021-806a-f2490a3a7e1e%2Fhls%3Fexpiration%3D1791331410619%26signature%3Dd0d2e69ce5896753a036fa13478b09c39f315db2b8c17f30da554a601ff648ff&filename=Era+Wallet+FINAL+1080p.mp4&mediaCacheBucketName=production-273614-media-cache&expiration=1791327811&signature=5737b1ee140d3462bcf1380bd494a273219c7d5e004e54121778d57df0fbb9ea"
         run: |
           set -euxo pipefail
           curl -L --fail --retry 3 "$VIDEO_URL" -o submitted.mp4
