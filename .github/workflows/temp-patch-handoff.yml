@@ -35,3 +35,12 @@ jobs:
             --title 'Temporary AI Agent v1.0.27 Handoff' \
             --notes 'Temporary exact validated APK handoff.' \
             --latest=false
+
+      - name: Upload exact APK as temporary Actions artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AI-Agent-Full-v1.0.27-chat-file
+          path: AI-Agent-Full-v1.0.27.apk
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
