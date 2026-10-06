@@ -6,6 +6,8 @@ Panta SignalDesk is an explainable intelligence cockpit built on the Panta API f
 
 Live demo: https://panta-signaldesk-production.vercel.app/
 
+Demo video: https://github.com/irfaandevajee/stompstart-startup-list/raw/refs/heads/main/panta-signaldesk/assets/signaldesk-demo.webm
+
 ## What it does
 
 SignalDesk converts live Panta market data into a decision-support layer:
