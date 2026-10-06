@@ -1,0 +1,29 @@
+name: Temporary APK Patch Handoff
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/temp-patch-handoff.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  handoff:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch verified patch
+        run: |
+          set -euo pipefail
+          curl -fL 'https://tmpfiles.org/dl/wVA3lTywcikO/v1020-to-v1027.zip' -o patch.zip
+          unzip -q patch.zip
+          echo 'a1ce306d1c0772ef2cd01422fe3dfdbcde9ec174b89fe9aafbef4b41ded08e7d  v1020-to-v1027.bsdiff' | sha256sum -c -
+      - name: Upload patch
+        uses: actions/upload-artifact@v4
+        with:
+          name: v1020-to-v1027-patch
+          path: v1020-to-v1027.bsdiff
+          retention-days: 1
+          compression-level: 0
