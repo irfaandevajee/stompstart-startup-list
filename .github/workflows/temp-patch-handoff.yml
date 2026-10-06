@@ -1,4 +1,4 @@
-name: Temporary APK Release Handoff
+name: Cleanup Temporary APK Handoff
 
 on:
   push:
@@ -11,36 +11,12 @@ permissions:
   contents: write
 
 jobs:
-  handoff:
+  cleanup:
     runs-on: ubuntu-latest
     steps:
-      - name: Reassemble exact validated v1.0.27 APK
-        run: |
-          set -euo pipefail
-          BASE='https://nyuqtsumryimknijffoc.supabase.co/storage/v1/object/public/ai-agent-chat-handoff/handoff/1.0.27/3b9a5d0e9be9eacfd6165f351d4dec144c9a1cd971d6e34ccfe51d8282b592a8'
-          curl -fL "$BASE/AI-Agent-Full-v1.0.27.apk.part-a" -o part-a
-          curl -fL "$BASE/AI-Agent-Full-v1.0.27.apk.part-b" -o part-b
-          cat part-a part-b > AI-Agent-Full-v1.0.27.apk
-          test "$(stat -c%s AI-Agent-Full-v1.0.27.apk)" = '58005576'
-          echo '3b9a5d0e9be9eacfd6165f351d4dec144c9a1cd971d6e34ccfe51d8282b592a8  AI-Agent-Full-v1.0.27.apk' | sha256sum -c -
-
-      - name: Create temporary public release asset
+      - name: Remove temporary public release and tag
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          gh release delete chat-handoff-v1.0.27 --repo "$GITHUB_REPOSITORY" --yes 2>/dev/null || true
-          gh release create chat-handoff-v1.0.27 AI-Agent-Full-v1.0.27.apk \
-            --repo "$GITHUB_REPOSITORY" \
-            --title 'Temporary AI Agent v1.0.27 Handoff' \
-            --notes 'Temporary exact validated APK handoff.' \
-            --latest=false
-
-      - name: Upload exact APK as temporary Actions artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: AI-Agent-Full-v1.0.27-chat-file
-          path: AI-Agent-Full-v1.0.27.apk
-          if-no-files-found: error
-          retention-days: 1
-          compression-level: 0
+          gh release delete chat-handoff-v1.0.27 --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag
