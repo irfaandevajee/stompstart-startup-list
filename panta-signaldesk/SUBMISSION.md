@@ -63,5 +63,8 @@ https://github.com/irfaandevajee/stompstart-startup-list/tree/main/panta-signald
 ## Live demo
 https://panta-signaldesk-production.vercel.app/
 
+## Demo video
+https://github.com/irfaandevajee/stompstart-startup-list/raw/refs/heads/main/panta-signaldesk/assets/signaldesk-demo.webm
+
 ## Disclosure
 This project uses pre-existing open-source/web platform tooling and Panta infrastructure. SignalDesk-specific implementation and product work should be described accurately in the Colosseum development-history disclosure.
