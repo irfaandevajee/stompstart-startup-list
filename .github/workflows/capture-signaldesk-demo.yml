@@ -1,0 +1,34 @@
+name: Import SignalDesk demo capture
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/capture-signaldesk-demo.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  import-demo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Download verified Agent-browser capture
+        run: |
+          mkdir -p panta-signaldesk/assets
+          curl --fail --location --retry 4 --retry-delay 2 \
+            'https://sb-21d6fob6ga32.vercel.run/signaldesk-demo.webm' \
+            --output panta-signaldesk/assets/signaldesk-demo.webm
+          test -s panta-signaldesk/assets/signaldesk-demo.webm
+          file panta-signaldesk/assets/signaldesk-demo.webm
+          ls -lh panta-signaldesk/assets/signaldesk-demo.webm
+      - name: Commit captured demo
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add panta-signaldesk/assets/signaldesk-demo.webm
+          git commit -m 'Add verified SignalDesk product demo capture'
+          git push
