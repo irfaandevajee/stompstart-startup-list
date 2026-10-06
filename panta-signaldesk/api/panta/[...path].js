@@ -1,12 +1,23 @@
 const BASE = 'https://live-api.panta.market/api/v1';
 
+function cookieValue(cookieHeader, name) {
+  const cookies = String(cookieHeader || '').split(';');
+  for (const item of cookies) {
+    const i = item.indexOf('=');
+    if (i < 0) continue;
+    const key = item.slice(0, i).trim();
+    if (key === name) return decodeURIComponent(item.slice(i + 1).trim());
+  }
+  return '';
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (!['GET', 'HEAD'].includes(req.method)) {
     return res.status(405).json({ error: 'read_only_proxy' });
   }
 
-  const key = process.env.PANTA_API_KEY;
+  const key = cookieValue(req.headers.cookie, 'panta_key') || process.env.PANTA_API_KEY;
   if (!key) {
     return res.status(503).json({ error: 'panta_api_key_not_configured' });
   }
@@ -32,10 +43,7 @@ module.exports = async function handler(req, res) {
   try {
     const r = await fetch(upstream, {
       method: req.method,
-      headers: {
-        Accept: 'application/json',
-        'X-Api-Key': key,
-      },
+      headers: { Accept: 'application/json', 'X-Api-Key': key },
     });
     const body = await r.text();
     res.status(r.status);
