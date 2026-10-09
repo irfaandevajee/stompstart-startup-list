@@ -18,8 +18,8 @@ access:
     url: https://my.tiun.business/
 categories:
   - developer-tools
-  - payments
   - business-software
+  - finance
 stage: live
 pricing:
   model: freemium
