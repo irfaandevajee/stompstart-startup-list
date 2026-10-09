@@ -56,18 +56,18 @@ sources:
     title: tiun pricing
   - url: https://tiun.io/brand-assets
     title: tiun official brand assets
-  - url: https://www.producthunt.com/products/tiun-2/awards
-    title: tiun launch awards on Product Hunt
+  - url: https://devtrends.site/en/reports/2026-09-15/
+    title: Developer Trends Report for September 15, 2026
 launch:
-  title: tiun launches its unified backend for AI and SaaS builders
+  title: tiun appears in the September 15 developer launch report
   summary: >-
-    tiun publicly launched its combined authentication, payments, billing,
-    customer-data and analytics platform on Product Hunt.
+    The September 15 Developer Trends report listed tiun and described its
+    combined authentication, payments, customer-data and analytics platform.
   occurred_on:
     precision: day
     value: "2026-09-15"
   date_basis: announced
   source:
-    url: https://www.producthunt.com/products/tiun-2/awards
-    title: tiun awards on Product Hunt
-    locator: Product Hunt lists the tiun launch and its daily and weekly awards on September 15, 2026.
+    url: https://devtrends.site/en/reports/2026-09-15/
+    title: Developer Trends Report for September 15, 2026
+    locator: The dated report lists tiun. as a Product Hunt launch and describes its unified backend.
